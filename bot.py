@@ -1,5 +1,7 @@
 import asyncio
 import sqlite3
+import os
+from aiohttp import web
 from datetime import datetime, timedelta
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
@@ -8,7 +10,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 
-# Вставьте ваш токен в кавычки ниже:
+# Вставьте ваш новый токен в кавычки ниже:
 API_TOKEN = '8947789741:AAECN0ar5_81FMNRKuXL8jc5OU4ZMqoF6KI'
 
 bot = Bot(token=API_TOKEN)
@@ -139,7 +141,6 @@ async def process_delete(message: Message, state: FSMContext):
     conn = sqlite3.connect('birthdays.db')
     cursor = conn.cursor()
     
-    # Проверяем наличие контакта
     cursor.execute(
         'SELECT id FROM contacts WHERE user_id = ? AND name = ?',
         (message.from_user.id, target_name)
@@ -152,7 +153,6 @@ async def process_delete(message: Message, state: FSMContext):
         conn.close()
         return
 
-    # Удаляем запись из базы данных
     cursor.execute(
         'DELETE FROM contacts WHERE user_id = ? AND name = ?',
         (message.from_user.id, target_name)
@@ -194,9 +194,25 @@ async def check_birthdays_loop():
 
         await asyncio.sleep(3600)
 
+# --- Веб-сервер для удержания порта на Render ---
+
+async def handle(request):
+    return web.Response(text="Bot is running!")
+
+async def web_server():
+    app = web.Application()
+    app.router.add_get("/", handle)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    
+    port = int(os.environ.get("PORT", 10000))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
 async def main():
+    asyncio.create_task(web_server())
     asyncio.create_task(check_birthdays_loop())
-    print("Бот успешно запущен с функцией удаления!")
+    print("Бот успешно запущен на сервере!")
     await dp.start_polling(bot)
 
 if __name__ == '__main__':
