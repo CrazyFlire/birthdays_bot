@@ -9,7 +9,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 
 # Вставьте ваш токен в кавычки ниже:
-API_TOKEN = '8947789741:AAGTwMkWzgvXgpT8SiQaCqVWQBEDbrqKQh8'
+API_TOKEN = '8947789741:AAECN0ar5_81FMNRKuXL8jc5OU4ZMqoF6KI'
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
